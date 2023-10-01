@@ -1,0 +1,21 @@
+
+stages:
+  - deploy-to-kubernetes
+  - deploy-to-gcp-cloud-run
+
+deploy-to-kubernetes:
+  stage: deploy-to-kubernetes
+  when: manual
+  trigger:
+    include:
+      - local: kubernetes/.gitlab-ci.yml
+    strategy: depend
+
+deploy-to-gcp-cloud-run:
+  stage: deploy-to-gcp-cloud-run
+  when: manual
+  trigger:
+    include:
+      - local: google-cloud/.gitlab-ci.yml
+    strategy: depend
+

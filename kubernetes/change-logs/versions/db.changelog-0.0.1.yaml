@@ -1,0 +1,38 @@
+# Changelog 0.0.1
+# creates usd prices table
+databaseChangeLog:
+- changeSet:
+    id: 1
+    author: sdefontaine
+    runOnChange: true
+
+    # check if table exists
+    preconditions:
+      - onFail: MARK_RUN
+      - tableExists:
+          tableName: usd_prices
+          schemaName: ${schema.name}
+    
+    changes:
+    - createTable:
+        schemaName: ${schema.name}
+        tableName: usd_prices
+        columns:
+        - column:
+            autoIncrement: true
+            constraints:
+              nullable: false
+              primaryKey: true
+              primaryKeyName: usd_prices_pk
+            name: usd_prices_id
+            type: INTEGER
+        - column:
+            name: currency
+            type: VARCHAR(20)
+        - column: 
+            name: price
+            type: INTEGER
+        - column:
+            defaultValueComputed: CURRENT_DATE
+            name: last_updated
+            type: date

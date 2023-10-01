@@ -1,0 +1,67 @@
+
+stages:
+  - deploy
+  - initialize
+
+.variables: &variables
+  POSTGRES_DB: samble_db
+  POSTGRES_USER: postgres
+  POSTGRES_PASSWORD: password1
+
+.deploy: &deploy
+  image: alpine/helm
+  stage: deploy
+  tags:
+    - docker-runner
+  script:
+    - helm upgrade -i $CI_PROJECT_NAME ./helm -n $NAMESPACE
+      --set namespace=$NAMESPACE --set name=$CI_PROJECT_NAME 
+      --set postgres.database=$POSTGRES_DB --set postgres.user=$POSTGRES_USER 
+      --set postgres.password=$POSTGRES_PASSWORD --wait --debug --cleanup-on-fail
+
+.initialize: &initialize
+  image: liquibase/liquibase
+  stage: initialize
+  tags:
+    - docker-runner
+  script:
+    - liquibase --url=$LIQUIBASE_URL --username=$POSTGRES_USER --password=$POSTGRES_PASSWORD updatesql
+
+dev-deploy:
+  <<: *deploy
+  allow_failure: false
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+  variables:
+    <<: *variables
+    NAMESPACE: dev
+  only:
+    - development
+
+initialize-dev:
+  <<: *initialize
+  variables:
+    <<: *variables
+    LIQUIBASE_URL: jdbc:postgresql://postgres.dev:5432/$POSTGRES_DATABASE
+  only:
+    - development
+
+prod-deploy:
+  <<: *deploy
+  allow_failure: false
+  environment:
+    name: review/$CI_COMMIT_REF_NAME
+  variables:
+    <<: *variables
+    NAMESPACE: prod
+  only:
+    - main
+
+initialize-prod:
+  <<: *initialize
+  variables:
+    <<: *variables
+    LIQUIBASE_URL: jdbc:postgresql://postgres.prod:5432/$POSTGRES_DATABASE
+  only:
+    - main
+

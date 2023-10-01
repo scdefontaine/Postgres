@@ -1,0 +1,17 @@
+databaseChangeLog:
+- property:
+    name: changelog.dir
+    value: change-logs/versions
+- property:
+    name: schema.name
+    value: public
+
+- preConditions:
+    - onFail: HALT
+    - onError: HALT
+    - onFailMessage: "Whomp. Something failed"
+    - onErrorMessage: "Whomp. Something broke (error)"
+
+- includeAll:
+    path: ${changelog.dir}
+    errorIfMissingorEmpty: true
